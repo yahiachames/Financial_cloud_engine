@@ -1,0 +1,167 @@
+bundle:
+  name: financial_cloud_engine
+
+targets:
+  dev:
+    mode: development
+    default: true
+    workspace:
+      host: https://<your-databricks-instance-url>
+
+resources:
+  jobs:
+    # ====================================================
+    # JOB 1: SPEED LAYER (Streaming)
+    # Severity: SEV-1 (CRITICAL)
+    # Protocol: WAKE UP CALL (Immediate Response)
+    # ====================================================
+    speed_layer_pipeline:
+      name: "[SEV-1 CRITICAL] Speed Layer - WAKE UP CALL"
+      tags:
+        layer: speed
+        type: streaming
+        severity: sev-1
+      job_clusters:
+        - job_cluster_key: stream_cluster
+          new_cluster:
+            spark_version: "13.3.x-scala2.12"
+            node_type_id: "i3.xlarge"
+            num_workers: 2
+      email_notifications:
+        on_failure:
+          - yahia.chames14@gmail.com
+      tasks:
+            
+        # 1. Bronze
+        - task_key: bronze_stream
+          job_cluster_key: stream_cluster
+          notebook_task:
+            notebook_path: ./src/bronze/bronze_ticker_stream
+            
+        # 2. Silver
+        - task_key: silver_enrich
+          depends_on:
+            - task_key: bronze_stream
+          job_cluster_key: stream_cluster
+          notebook_task:
+            notebook_path: ./src/silver/silver_ticker_enrich
+            
+        # 3. Gold
+        - task_key: gold_agg
+          depends_on:
+            - task_key: silver_enrich
+          job_cluster_key: stream_cluster
+          notebook_task:
+            notebook_path: ./src/gold/gold_ticker_agg
+            
+        # 4. Serving
+        - task_key: update_serving
+          depends_on:
+            - task_key: gold_agg
+          job_cluster_key: stream_cluster
+          notebook_task:
+            notebook_path: ./src/serving Layer/serving_layer
+
+    # ====================================================
+    # JOB 2: BATCH LAYER (Fundamentals)
+    # Severity: SEV-2 (HIGH)
+    # Protocol: Fix by Morning (4 Hours SLA)
+    # ====================================================
+    batch_layer_pipeline:
+      name: "[SEV-2 HIGH] Batch Layer - Fix by Morning"
+      tags:
+        layer: batch
+        schedule: daily
+        severity: sev-2
+      schedule:
+        quartz_cron_expression: "0 0 6 * * ?" # 6:00 AM UTC
+        timezone_id: "UTC"
+      email_notifications:
+        on_failure:
+          - yahiachames@gmail.com
+      tasks:
+        # 1. Ingestion (Added as requested)
+        - task_key: ingest_landing_batch
+          notebook_task:
+            notebook_path: ./src/ingestion/01_landing_zone
+            base_parameters:
+              mode: "batch" # Logic to handle batch mode
+            
+        # 2. Bronze
+        - task_key: bronze_financials
+          depends_on:
+            - task_key: ingest_landing_batch
+          notebook_task:
+            notebook_path: ./src/bronze/bronze_financials_batch
+            
+        # 3. Silver
+        - task_key: silver_financials
+          depends_on:
+            - task_key: bronze_financials
+          notebook_task:
+            notebook_path: ./src/silver/silver_financials_batch
+            
+        # 4. Gold (WACC Calculation)
+        - task_key: gold_wacc
+          depends_on:
+            - task_key: silver_financials
+          notebook_task:
+            notebook_path: ./src/gold/gold_financials_batch
+
+    # ====================================================
+    # JOB 3: OPERATIONS (Ops & Maintenance)
+    # Severity: SEV-3 (MEDIUM)
+    # Protocol: Fix Next Business Day (24 Hours SLA)
+    # ====================================================
+    ops_maintenance_pipeline:
+      name: "[SEV-3 MEDIUM] Ops Maintenance - Fix Next Business Day"
+      tags:
+        layer: ops
+        severity: sev-3
+      schedule:
+        quartz_cron_expression: "0 0 1 * * ?" # 1:00 AM UTC
+        timezone_id: "UTC"
+      email_notifications:
+        on_failure:
+          - yahiachames@gmail.com
+      tasks:
+        # 1. Optimize (Z-Order)
+        - task_key: optimize_tables
+          notebook_task:
+            notebook_path: ./src/optimize/optimize_maintenance
+            
+        # 2. Health Check
+        - task_key: health_check
+          depends_on:
+            - task_key: optimize_tables
+          notebook_task:
+            notebook_path: ./src/monitoring/monitor_table_structure
+
+        # 3. Compliance Audit
+        - task_key: compliance_audit_silver
+          depends_on:
+            - task_key: health_check
+          notebook_task:
+            notebook_path: ./src/queries audit/B. Silver Audit (The "Strict Truth" Check)
+
+    # ====================================================
+    # JOB 4: INFRASTRUCTURE SETUP (Run Once)
+    # Severity: SEV-4 (LOW)
+    # Protocol: Deployment Only
+    # ====================================================
+    setup_infrastructure:
+      name: "[SEV-4] Infrastructure Setup"
+      tasks:
+        - task_key: init_schemas
+          notebook_task:
+            notebook_path: ./src/init/00_master_contract
+        - task_key: apply_governance
+          depends_on:
+            - task_key: init_schemas
+          notebook_task:
+            notebook_path: ./src/Governance/governance_policy
+        - task_key: init_auth
+          depends_on:
+            - task_key: apply_governance
+          notebook_task:
+            notebook_path: ./src/init_auth
