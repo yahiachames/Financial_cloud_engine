@@ -90,9 +90,9 @@ resources:
             notebook_path: init/init_auth.py
             base_parameters:
               # Leave empty to use Secrets, or fill when running manually with new keys
-              aws_access_key: "" 
-              aws_secret_key: ""
-              aws_session_token: ""
+              aws_access_key: "ASIAST56G5EFD6YDJ2KZ" 
+              aws_secret_key: "gN8ylZhu9ODP3V8egr0t3PXgmFsMUhLXB8kD0vlI"
+              aws_session_token: "IQoJb3JpZ2luX2VjEEAaCXVzLXdlc3QtMiJIMEYCIQDRieuHCJMdpCkDOWsuGT9w7+3LOxEUftcR8rWVPNKbfgIhALHzgsbNEIuN6ELgozecwanhrgWOFrhc1A+ZaARNW3vzKqwCCAkQBBoMMTgwMjUwNjY3Mjc0IgxGH+0zj1MHB5UJigMqiQK4SiB+llGwXarDgywu5DPNATicspcsptZkzZ0PBJFQDRynpPp+A8HzQ4W6tk/5NgcVEy76oR8DIFiHUHMDOIXGJjN4uHVIRcYvZfUFz1E5ZS+HOOcS7Ch7lj6XhkDsSpeYm7MWU6nHzoK+G/ZmUv1t3aZKmgCaUph4NS0qNG3J384z3ZmfKdvBnJSby4B/wj+5VPn1d1SBMZoluD17phCek3wcsNQtMgZ8kE2WfbbZh0Ol1PNwpT1TVVnCVZNuaZsZ3jZsLgogxFLNs8i6e7iXDap8O+OewCwuIqK4iZSzeW025lYjZz9chXnMl30OQ6VBVDD3Plnko0X5InLCif19u6u/ZwcfplcuMNrQmcsGOpwBwSEnH4TY0NZnJnG4du08q1NJZP/MH4LTuiho7WBx8pvO59Z5tl5IplH4dRJn/1LNUoPQeXO4t6SzTZZiI0TntBfJGrSCbUf1lh5bvtQ6FAVpTlLn1I8lk6bLyaLXQvZVr+dctPL2tOzckLulaErVD0EIecV4q525Tpk3SHJMmjKUidcB4aH5PVSbESnaAK0MA1cwiC3Gd0Ngfxhx"
         
         # 2. Initialize Schema
         - task_key: init_schemas
