@@ -1,3 +1,4 @@
+# Databricks notebook source
 # Notebook: src/init/init_auth
 # Description: Centralizes AWS Authentication and broadcasts keys to downstream tasks.
 

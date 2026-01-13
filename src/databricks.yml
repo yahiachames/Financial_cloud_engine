@@ -46,7 +46,7 @@ resources:
         - task_key: bronze_stream
           job_cluster_key: stream_cluster
           notebook_task:
-            notebook_path: ./src/bronze/bronze_ticker_stream.ipynb
+            notebook_path: bronze/bronze_ticker_stream.ipynb
             
         # 2. Silver
         - task_key: silver_enrich
@@ -54,7 +54,7 @@ resources:
             - task_key: bronze_stream
           job_cluster_key: stream_cluster
           notebook_task:
-            notebook_path: ./src/silver/silver_ticker_enrich.ipynb
+            notebook_path: silver/silver_ticker_enrich.ipynb
             
         # 3. Gold
         - task_key: gold_agg
@@ -62,7 +62,7 @@ resources:
             - task_key: silver_enrich
           job_cluster_key: stream_cluster
           notebook_task:
-            notebook_path: ./src/gold/gold_ticker_agg.ipynb
+            notebook_path: gold/gold_ticker_agg.ipynb
             
         # 4. Serving (Optional, assumed part of Gold flow)
         - task_key: update_serving
@@ -70,7 +70,7 @@ resources:
             - task_key: gold_agg
           job_cluster_key: stream_cluster
           notebook_task:
-            notebook_path: ./src/serving Layer/serving_layer.ipynb
+            notebook_path: serving Layer/serving_layer.ipynb
 
     # ====================================================
     # PIPELINE A: BATCH LAYER
@@ -97,7 +97,7 @@ resources:
 # 1. Initialize Secrets (The Gateway)
         - task_key: Init_Auth # <--- MUST MATCH the key used in downstream code
           notebook_task:
-            notebook_path: ./src/init/init_auth.py
+            notebook_path: init/init_auth.py
             base_parameters:
               # Leave empty to use Secrets, or fill when running manually with new keys
               aws_access_key: "" 
@@ -109,14 +109,14 @@ resources:
           depends_on:
             - task_key: Init_Auth
           notebook_task:
-            notebook_path: ./src/init/00_master_contract
+            notebook_path: init/00_master_contract.ipynb
 
         # 3. Landing Zone
         - task_key: ingest_landing
           depends_on:
             - task_key: init_schemas
           notebook_task:
-            notebook_path: ./src/ingestion/01_landing_zone.py
+            notebook_path: ingestion/01_landing_zone.ipynb
             base_parameters:
               mode: "batch"
 
@@ -125,21 +125,21 @@ resources:
           depends_on:
             - task_key: ingest_landing
           notebook_task:
-            notebook_path: ./src/bronze/bronze_financials_batch.ipynb
+            notebook_path: bronze/bronze_financials_batch.ipynb
             
         # 5. Silver
         - task_key: silver_financials
           depends_on:
             - task_key: bronze_financials
           notebook_task:
-            notebook_path: ./src/silver/silver_financials_batch.ipynb
+            notebook_path: silver/silver_financials_batch.ipynb
             
         # 6. Gold
         - task_key: gold_wacc
           depends_on:
             - task_key: silver_financials
           notebook_task:
-            notebook_path: ./src/gold/gold_financials_batch.ipynb
+            notebook_path: gold/gold_financials_batch.ipynb
 
     # ====================================================
     # PIPELINE D: GOVERNANCE
@@ -164,7 +164,7 @@ resources:
       tasks:
         - task_key: run_governance_checks
           notebook_task:
-            notebook_path: ./src/Governance/governance_policy.ipynb
+            notebook_path: Governance/governance_policy.ipynb
 
     # ====================================================
     # PIPELINE C: OPTIMIZE (Ops)
@@ -188,4 +188,4 @@ resources:
       tasks:
         - task_key: optimize_tables
           notebook_task:
-            notebook_path: ./src/optimize/optimize_maintenance.ipynb
+            notebook_path: optimize/optimize_maintenance.ipynb
