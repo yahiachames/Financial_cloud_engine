@@ -90,9 +90,9 @@ resources:
             notebook_path: init/init_auth.py
             base_parameters:
               # Leave empty to use Secrets, or fill when running manually with new keys
-              aws_access_key: "ASIAST56G5EFD6YDJ2KZ" 
-              aws_secret_key: "gN8ylZhu9ODP3V8egr0t3PXgmFsMUhLXB8kD0vlI"
-              aws_session_token: "IQoJb3JpZ2luX2VjEEAaCXVzLXdlc3QtMiJIMEYCIQDRieuHCJMdpCkDOWsuGT9w7+3LOxEUftcR8rWVPNKbfgIhALHzgsbNEIuN6ELgozecwanhrgWOFrhc1A+ZaARNW3vzKqwCCAkQBBoMMTgwMjUwNjY3Mjc0IgxGH+0zj1MHB5UJigMqiQK4SiB+llGwXarDgywu5DPNATicspcsptZkzZ0PBJFQDRynpPp+A8HzQ4W6tk/5NgcVEy76oR8DIFiHUHMDOIXGJjN4uHVIRcYvZfUFz1E5ZS+HOOcS7Ch7lj6XhkDsSpeYm7MWU6nHzoK+G/ZmUv1t3aZKmgCaUph4NS0qNG3J384z3ZmfKdvBnJSby4B/wj+5VPn1d1SBMZoluD17phCek3wcsNQtMgZ8kE2WfbbZh0Ol1PNwpT1TVVnCVZNuaZsZ3jZsLgogxFLNs8i6e7iXDap8O+OewCwuIqK4iZSzeW025lYjZz9chXnMl30OQ6VBVDD3Plnko0X5InLCif19u6u/ZwcfplcuMNrQmcsGOpwBwSEnH4TY0NZnJnG4du08q1NJZP/MH4LTuiho7WBx8pvO59Z5tl5IplH4dRJn/1LNUoPQeXO4t6SzTZZiI0TntBfJGrSCbUf1lh5bvtQ6FAVpTlLn1I8lk6bLyaLXQvZVr+dctPL2tOzckLulaErVD0EIecV4q525Tpk3SHJMmjKUidcB4aH5PVSbESnaAK0MA1cwiC3Gd0Ngfxhx"
+              aws_access_key: "ASIAST56G5EFHO2D4QJP" 
+              aws_secret_key: "IWm1fdd009zl0tVApXZ8FoMbYGfroQD3jJNgPkCQ"
+              aws_session_token: "IQoJb3JpZ2luX2VjEFYaCXVzLXdlc3QtMiJHMEUCIAjxQMEGKO1K7FiZ3T3gx5CZFaqDNkRWVRcceh6YTJUzAiEA4dhbJa0bC/YqBqIfkeym4MhENPJA6FxoZF3U3VyKhwgqrAIIHxAEGgwxODAyNTA2NjcyNzQiDFO+djv7o8PM1gCJ7CqJAv6NBUP+dL6MA6cJyMMqgFYCpzaZAHAZHNZasIaegEj9uKg7KwTYOAWkrpWPzy9AdpQCoOjQb6nWl7dB+oA/EanNvjm017D0hyi43+Ub7F73Lrc/OGxSiTNwwwQGD/3nPjbwKxZM8MOvpVe0UgyoUukSgatrWSJbYiNea8NsVSkRXFcBhdciH9226AVtJu3RNXdahP4keMFB/H58ZxmmqIBIYFwemHUh3zY/QlmKUf5ilpp6cGWnq/B/SwpH6QKnNabTtbUPzhZ7i6uO49ZLTKQHmM9yeU08/WIyStDsLFuITntsTh1NzG3AxjSW8XHUfcdwB/si6ZYH0tY4Baa5nM4p006lqFt3qrwwlcaeywY6nQFuz+1rwqtust64KGujRvjao/+2GjgFywawXkavq1Kj6sGCgabum4UxfFhVg9Dfn8VS3xZIDGF8wtKZ92sE/rWlZBPH7kTDapOMTZofsjcoWSV9vjIt8o42SdFCfyLIIBhgRFrsTdodc7a+sFXPEOYKnRcyZsGQzXby7xPnVYL+RpRvdAG0xJRvQV08gmNLhBcygpk/B5+1E1EOptv8F"
         
         # 2. Initialize Schema
         - task_key: init_schemas
