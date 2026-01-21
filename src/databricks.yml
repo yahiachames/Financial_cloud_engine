@@ -1,0 +1,181 @@
+bundle:
+  name: financial_cloud_engine
+
+targets:
+  dev:
+    mode: development
+    default: true
+    workspace:
+      host: https://dbc-d675a8d2-04ae.cloud.databricks.com
+
+resources:
+  jobs:
+    # ====================================================
+    # PIPELINE B: SPEED LAYER (Stream)
+    # Severity: SEV-1 (CRITICAL) - Wake Up Call
+    # Frequency: Every 1 Minute (AvailableNow)
+    # ====================================================
+    speed_layer_pipeline:
+      name: "[SEV-1 CRITICAL] Speed Layer - WAKE UP CALL"
+      tags:
+        layer: speed
+        type: streaming
+        severity: sev-1
+      
+      # Run every 1 minute
+      schedule:
+        quartz_cron_expression: "0 0/1 * * * ?" 
+        timezone_id: "UTC"
+
+
+      
+      # Alerting: Email (Fallback)
+      # Note: To use Teams, replace this block with 'webhook_notifications' and your Destination ID
+      email_notifications:
+        on_failure:
+          - yahia.chames14@gmail.com
+
+      tasks:
+        # 1. Bronze (No pre-config as requested)
+        - task_key: bronze_stream
+          notebook_task:
+            notebook_path: bronze/bronze_ticker_stream.ipynb
+            
+        # 2. Silver
+        - task_key: silver_enrich
+          depends_on:
+            - task_key: bronze_stream
+          notebook_task:
+            notebook_path: silver/silver_ticker_enrich.ipynb
+            
+        # 3. Gold
+        - task_key: gold_agg
+          depends_on:
+            - task_key: silver_enrich
+          notebook_task:
+            notebook_path: gold/gold_ticker_agg.ipynb
+            
+        # 4. Serving (Optional, assumed part of Gold flow)
+        - task_key: update_serving
+          depends_on:
+            - task_key: gold_agg
+          notebook_task:
+            notebook_path: serving Layer/serving_layer.ipynb
+
+    # ====================================================
+    # PIPELINE A: BATCH LAYER
+    # Severity: SEV-2 (HIGH) - Fix Tomorrow
+    # Frequency: Daily at 06:00 AM
+    # Config: Includes Secrets & Schema Init
+    # ====================================================
+    batch_layer_pipeline:
+      name: "[SEV-2 HIGH] Batch Layer - Fix Tomorrow"
+      tags:
+        layer: batch
+        severity: sev-2
+      
+      schedule:
+        quartz_cron_expression: "0 0 6 * * ?" # 6:00 AM UTC
+        timezone_id: "UTC"
+      
+      email_notifications:
+        on_failure:
+          - yahia.chames14@gmail.com
+
+      tasks:
+        # 1. Initialize Secrets (AWS Credentials)
+# 1. Initialize Secrets (The Gateway)
+        - task_key: Init_Auth # <--- MUST MATCH the key used in downstream code
+          notebook_task:
+            notebook_path: init/init_auth.py
+            base_parameters:
+              # Leave empty to use Secrets, or fill when running manually with new keys
+              aws_access_key: "ASIAST56G5EFHO2D4QJP" 
+              aws_secret_key: "IWm1fdd009zl0tVApXZ8FoMbYGfroQD3jJNgPkCQ"
+              aws_session_token: "IQoJb3JpZ2luX2VjEFYaCXVzLXdlc3QtMiJHMEUCIAjxQMEGKO1K7FiZ3T3gx5CZFaqDNkRWVRcceh6YTJUzAiEA4dhbJa0bC/YqBqIfkeym4MhENPJA6FxoZF3U3VyKhwgqrAIIHxAEGgwxODAyNTA2NjcyNzQiDFO+djv7o8PM1gCJ7CqJAv6NBUP+dL6MA6cJyMMqgFYCpzaZAHAZHNZasIaegEj9uKg7KwTYOAWkrpWPzy9AdpQCoOjQb6nWl7dB+oA/EanNvjm017D0hyi43+Ub7F73Lrc/OGxSiTNwwwQGD/3nPjbwKxZM8MOvpVe0UgyoUukSgatrWSJbYiNea8NsVSkRXFcBhdciH9226AVtJu3RNXdahP4keMFB/H58ZxmmqIBIYFwemHUh3zY/QlmKUf5ilpp6cGWnq/B/SwpH6QKnNabTtbUPzhZ7i6uO49ZLTKQHmM9yeU08/WIyStDsLFuITntsTh1NzG3AxjSW8XHUfcdwB/si6ZYH0tY4Baa5nM4p006lqFt3qrwwlcaeywY6nQFuz+1rwqtust64KGujRvjao/+2GjgFywawXkavq1Kj6sGCgabum4UxfFhVg9Dfn8VS3xZIDGF8wtKZ92sE/rWlZBPH7kTDapOMTZofsjcoWSV9vjIt8o42SdFCfyLIIBhgRFrsTdodc7a+sFXPEOYKnRcyZsGQzXby7xPnVYL+RpRvdAG0xJRvQV08gmNLhBcygpk/B5+1E1EOptv8F"
+        
+        # 2. Initialize Schema
+        - task_key: init_schemas
+          depends_on:
+            - task_key: Init_Auth
+          notebook_task:
+            notebook_path: init/00_master_contract.ipynb
+
+        # 3. Landing Zone
+        - task_key: ingest_landing
+          depends_on:
+            - task_key: init_schemas
+          notebook_task:
+            notebook_path: ingestion/01_landing_zone.ipynb
+            base_parameters:
+              mode: "batch"
+
+        # 4. Bronze
+        - task_key: bronze_financials
+          depends_on:
+            - task_key: ingest_landing
+          notebook_task:
+            notebook_path: bronze/bronze_financials_batch.ipynb
+            
+        # 5. Silver
+        - task_key: silver_financials
+          depends_on:
+            - task_key: bronze_financials
+          notebook_task:
+            notebook_path: silver/silver_financials_batch.ipynb
+            
+        # 6. Gold
+        - task_key: gold_wacc
+          depends_on:
+            - task_key: silver_financials
+          notebook_task:
+            notebook_path: gold/gold_financials_batch.ipynb
+
+    # ====================================================
+    # PIPELINE D: GOVERNANCE
+    # Severity: SEV-3 (MEDIUM)
+    # Frequency: Daily at 07:00 AM (Runs just after Batch)
+    # ====================================================
+    governance_pipeline:
+      name: "[SEV-3 MEDIUM] Governance Audit"
+      tags:
+        layer: governance
+        severity: sev-3
+      
+      # Scheduled 1 hour after Batch to ensure data is ready
+      schedule:
+        quartz_cron_expression: "0 0 7 * * ?" 
+        timezone_id: "UTC"
+      
+      email_notifications:
+        on_failure:
+          - yahia.chames14@gmail.com
+
+      tasks:
+        - task_key: run_governance_checks
+          notebook_task:
+            notebook_path: Governance/governance_policy.ipynb
+
+    # ====================================================
+    # PIPELINE C: OPTIMIZE (Ops)
+    # Severity: SEV-4 (LOW) - Fix Next Business Day
+    # Frequency: Daily at 01:00 AM
+    # ====================================================
+    ops_maintenance_pipeline:
+      name: "[SEV-4 LOW] Ops Maintenance - Fix NBD"
+      tags:
+        layer: ops
+        severity: sev-4
+      
+      schedule:
+        quartz_cron_expression: "0 0 1 * * ?" # 1:00 AM UTC
+        timezone_id: "UTC"
+      
+      email_notifications:
+        on_failure:
+          - yahia.chames14@gmail.com
+
+      tasks:
+        - task_key: optimize_tables
+          notebook_task:
+            notebook_path: optimize/optimize_maintenance.ipynb
